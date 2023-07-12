@@ -2,9 +2,9 @@ import cv2
 import serial
 import numpy as np
 import time
-import ast
 import random
 from tkinter import Tk
+from threading import Thread
 
 # Get screen size
 root = Tk()
@@ -14,16 +14,15 @@ root.destroy()
 
 ser = serial.Serial('/dev/ttyS0', 9600, timeout=1)
 player1 = serial.Serial('/dev/ttyUSB0', 9600)
-player2 = serial.Serial('/dev/ttyACM1', 9600)
+player2 = serial.Serial('/dev/ttyACM0', 9600)
 
 time.sleep(2)
 
 def get_all_player_ready_status(player1_ready, player2_ready):
-    players_ready = [player1_ready, player2_ready]
-    
+    players_ready = [player1_ready[0], player2_ready[0]]
     return players_ready
 
-def get_random_monster_action(highestAggroPlayer):
+def get_random_monster_action(target):
     monster = [
         {'strike':[{'target':target}, {'damage':2}]}, 
         {'swipe':[{'target':[1,9,3]}, {'damage':1}]}, 
@@ -40,11 +39,42 @@ bleed = 0
 fire = 0
 frost = 0
 shield = 0
+health = 20
 
-monster_action = get_random_monster_action(target)
+player1_ready = [False]
+player2_ready = [False]
 
-player1_ready = False
-player2_ready = False
+player1_aggro = [0]
+player2_aggro = [0]
+
+def handle_player(player, player_aggro, player_ready):
+    try:
+        while True:
+            if player.is_open and player.in_waiting > 0:
+                data = player.readline()
+                line = data.decode('utf-8', 'ignore').strip()  # ignore invalid characters
+
+                variables = line.split(',')
+                print(variables)
+                # Convert each string in the list to the correct type
+                variables[0] = str(variables[0])
+                variables[1] = int(variables[1])
+                player_aggro[0] = int(variables[4])
+                player_ready[0] = True
+            else:
+                time.sleep(0.01)  # To prevent CPU overuse
+    except Exception as e:
+        print(f"Error in handle_player: {str(e)}")
+
+thread1 = Thread(target=handle_player, args=(player1, player1_aggro, player1_ready))
+thread2 = Thread(target=handle_player, args=(player2, player2_aggro, player2_ready))
+
+
+thread1.setDaemon(True)
+thread2.setDaemon(True)
+
+thread1.start()
+thread2.start()
 
 try:
     while True:
@@ -56,124 +86,62 @@ try:
             player2.write(dataDecoded.encode('utf-8'))
             time.sleep(1)
             
+        if player1_ready[0] and player2_ready[0]:
+            if player1_aggro[0] > player2_aggro[0]:
+                target = 1
+            elif player1_aggro[0] < player2_aggro[0]:
+                target = 9
+            else:
+                target = 1
+            print("P1 aggro:" + str(player1_aggro[0]))
+            print("P2 aggro:" + str(player2_aggro[0]))
+            print("Target:" + str(target))
+            print("calling background file...")
+            background = cv2.imread('/home/g33krock/Pictures/dragon')
 
-            if player1.in_waiting > 0:
-                print(player1.in_waiting)
-                line = player1.readline().decode('utf-8', 'ignore').strip()  # ignore invalid characters
+            cv2.namedWindow("Image", cv2.WND_PROP_FULLSCREEN)
+            cv2.setWindowProperty("Image", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-                variables = line.split(',')
-                # Convert each string in the list to the correct type
-                variables[0] = str(variables[0])
-                variables[1] = int(variables[1])
-
-                cv2.namedWindow("Image", cv2.WND_PROP_FULLSCREEN)
-                cv2.setWindowProperty("Image", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-                background = cv2.imread('/home/g33krock/Pictures/warrior')
-                background = cv2.resize(background, (screen_width, screen_height))
-        
-                image = np.zeros((600, 800, 3), dtype="uint8")
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                origin = (50, 300)
-                font_scale = 1
-                font_color = (0, 0, 0)
-                line_type = 2
-                
-                # List of variable names for display
-                variable_names = ['class', 'health', 'baseaggro', 'aggromodifier', 'aggro']
-                
-                player1_ready = True
-
-                # Starting y-coordinate for the text
-                y = 50
-
-                # Loop over the variables and their corresponding names
-                for name, value in zip(variable_names, variables):
-                    # The text to display for this variable
-                    text = f'{name}: {value}'
-
-                    # Add the text to the image
-                    cv2.putText(background, text, (50, y), font, font_scale, font_color, line_type)
-
-                    # Increment the y-coordinate for the next line
-                    y += 30  # Change this value if you want more or less space between lines
-
-                cv2.imshow("Image", background)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
-                
-            if player2.in_waiting > 0:
-                line = player2.readline().decode('utf-8', 'ignore').strip()  # ignore invalid characters
-
-                variables = line.split(',')
-                # Convert each string in the list to the correct type
-                variables[0] = str(variables[0])
-                variables[1] = int(variables[1])
-
-                cv2.namedWindow("Image", cv2.WND_PROP_FULLSCREEN)
-                cv2.setWindowProperty("Image", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-                background = cv2.imread('/home/g33krock/Pictures/rogue')
-                background = cv2.resize(background, (screen_width, screen_height))
-        
-                image = np.zeros((600, 800, 3), dtype="uint8")
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                origin = (50, 300)
-                font_scale = 1
-                font_color = (0, 0, 0)
-                line_type = 2
-                
-                # List of variable names for display
-                variable_names = ['class', 'health', 'baseaggro', 'aggromodifier', 'aggro']
-                
-                player2_ready = True
-
-                # Starting y-coordinate for the text
-                y = 50
-
-                # Loop over the variables and their corresponding names
-                for name, value in zip(variable_names, variables):
-                    # The text to display for this variable
-                    text = f'{name}: {value}'
-
-                    # Add the text to the image
-                    cv2.putText(background, text, (50, y), font, font_scale, font_color, line_type)
-
-                    # Increment the y-coordinate for the next line
-                    y += 30  # Change this value if you want more or less space between lines
-
-                cv2.imshow("Image", background)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
-                
-            if get_all_player_ready_status(player1_ready, player2_ready) == [True, True]:
-                background = cv2.imread('/home/g33krock/Pictures/dragon')
+            image = np.zeros((600, 800, 3), dtype="uint8")
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            origin = (50, 300)
+            font_scale = 1
+            font_color = (0, 0, 0)
+            line_type = 2
             
-                cv2.namedWindow("Image", cv2.WND_PROP_FULLSCREEN)
-                cv2.setWindowProperty("Image", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-        
-                image = np.zeros((600, 800, 3), dtype="uint8")
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                origin = (50, 300)
-                font_scale = 1
-                font_color = (0, 0, 0)
-                line_type = 2
-                monster_action_string = str(monster_action)
+            monster_action = get_random_monster_action(target)
+            monster_action_string = str(monster_action)
+            print(str(monster_action))
+
+            cv2.putText(background, monster_action_string, origin, font, font_scale, font_color, line_type)
             
-                cv2.putText(background, monster_action_string, origin, font, font_scale, font_color, line_type)
-            
-                cv2.imshow("Image", background)
-                
+            print("About to display image...")
+            cv2.imshow("Image", background)
+            cv2.waitKey(10000)
+            cv2.destroyAllWindows()
+
+            # Reset readiness and waiting state
+            player1_ready[0] = False
+            player2_ready[0] = False
+            player1.reset_input_buffer()
+            player2.reset_input_buffer()
 
 except KeyboardInterrupt:
-    cv2.destroyAllWindows()
     print("Program interrupted by user, closing ports.")
 
 except Exception as e:
     print(f"Error: {str(e)}")
 
 finally:
+    # Wait for all threads to finish
+    thread1.join()
+    thread2.join()
+
+    # Now we can safely close our resources
     player1.close()
     player2.close()
     ser.close()
+    cv2.destroyAllWindows()
 
 
 
