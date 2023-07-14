@@ -55,9 +55,34 @@ int shield = 0;
 int prevPlayerAggro = 0;
 int modifiedPlayerAggro = 1;
 
-String playerClass = "warrior";
+String playerClass = "rogue";
 int playerHealth = 20;
 int playerAggro = 0;
+
+const unsigned char* warriorImage = player_classes[2];
+const unsigned char* rogueImage = player_classes[1];
+const unsigned char* priestImage = player_classes[0];
+
+struct Player {
+  int id;
+  const unsigned char* image;
+};
+
+Player players[] = {
+    {1, warriorImage},
+    {2, rogueImage},
+    {3, priestImage},
+    {4, goblin}
+  };
+
+int turnAggro;
+
+int randomNumber;
+
+int numPlayers = sizeof(players) / sizeof(players[0]);
+
+int currentIndex = 0;
+
 
 void setup() {
   Serial.begin(9600);
@@ -83,15 +108,34 @@ void setup() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
-  display.setCursor(0, 0);
 
-  display.clearDisplay();
   display.drawBitmap(0, 0, dungeongate, 128, 64, WHITE);
+  display.drawBitmap(56, 44, poisonImage, 16, 16, WHITE);
 
-  display.setCursor(50, 40);
-  display.print("Paper");
-  display.setCursor(43, 50);
-  display.print("Dungeon");
+  display.setCursor(20, 8);
+  display.print('P');
+  display.setCursor(20, 16);
+  display.print('a');
+  display.setCursor(20, 24);
+  display.print('p');
+  display.setCursor(20, 32);
+  display.print('e');
+  display.setCursor(20, 40);
+  display.print('r');
+  display.setCursor(105, 0);
+  display.print('D');
+  display.setCursor(105, 8);
+  display.print('u');
+  display.setCursor(105, 16);
+  display.print('n');
+  display.setCursor(105, 24);
+  display.print('g');
+  display.setCursor(105, 32);
+  display.print('e');
+  display.setCursor(105, 40);
+  display.print('o');
+  display.setCursor(105, 48);
+  display.print('n');
   display.display();
   resetValues();
 }
@@ -110,7 +154,7 @@ void loop() {
         }
       }
 
-      if (numbers[0] == 1) {
+      if (numbers[0] == 9) {
         updateValuesAndDisplay();
         valueIndex = 0;
         sendVariables();
@@ -125,24 +169,23 @@ void loop() {
       lastTimeButtonStateChanged = millis();
       lastButtonState1 = buttonState1;
       if (buttonState1 == LOW) {
-        // do an action, for example print on Serial
-        pos = pos + 1;
-        tens = pos / 10;
-        ones = pos % 10;
-        servo2.write(((215/10)*tens));
-        servo1.write(((215/10)*ones));
-        delay(100);
+
+//        pos = pos + 1;
+//        tens = pos / 10;
+//        ones = pos % 10;
+//        servo2.write(((215/10)*tens));
+//        servo1.write(((215/10)*ones));
+//        delay(100);
+        currentIndex++;
+
+        if (currentIndex >= numPlayers) {
+          currentIndex = 0;
+        }
         display.clearDisplay();
         display.setTextSize(1);
         display.setTextColor(WHITE);
         display.setCursor(0, 0);
-        analogWrite( GREEN_LED, 0 );
-        analogWrite( RED_LED, 0 );
-        analogWrite( YELLOW_LED, 0 );
-        analogWrite( BLUE_LED, 0 );
-        display.clearDisplay();
-        display.setCursor(30, 28);
-        display.print(pos);
+        display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
         display.display();
       }
     }
@@ -272,54 +315,210 @@ void updateValuesAndDisplay() {
   int bleed = numbers[6];
   int fire = numbers[7];
   int frost = numbers[8];
-  int shield = numbers[9]; 
+  int shield = numbers[9];
+  int damageTarget = 0;
+  int healTarget = 0;
+  int shieldTarget = 0;
+
+  if (damage > 0) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("Select");
+    display.setCursor(0, 8);
+    display.print("damage");
+    display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
+    display.display();
+  
+    while (damageTarget == 0) {
+      byte buttonState1 = digitalRead(BUTTON_ONE);
+      if (buttonState1 != lastButtonState1) {
+        lastTimeButtonStateChanged = millis();
+        lastButtonState1 = buttonState1;
+        if (buttonState1 == LOW) {
+          currentIndex++;
+    
+          if (currentIndex >= numPlayers) {
+            currentIndex = 0;
+          }
+          display.clearDisplay();
+          display.setTextSize(1);
+          display.setTextColor(WHITE);
+          display.setCursor(0, 0);
+          display.print("Select");
+          display.setCursor(0, 8);
+          display.print("damage");
+          display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
+          display.display();
+        }
+      }
+  
+      byte buttonState4 = digitalRead(BUTTON_FOUR);
+      if (buttonState4 != lastButtonState4) {
+        lastTimeButtonStateChanged = millis();
+        lastButtonState4 = buttonState4;
+        if (buttonState4 == LOW) {
+          damageTarget = players[currentIndex].id;
+        }
+      }
+    }
+  }
+
+  if (healing > 0) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("Select");
+    display.setCursor(0, 8);
+    display.print("heal");
+    display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
+    display.display();
+  
+    while (healTarget == 0) {
+      byte buttonState1 = digitalRead(BUTTON_ONE);
+      if (buttonState1 != lastButtonState1) {
+        lastTimeButtonStateChanged = millis();
+        lastButtonState1 = buttonState1;
+        if (buttonState1 == LOW) {
+          currentIndex++;
+    
+          if (currentIndex >= numPlayers) {
+            currentIndex = 0;
+          }
+          display.clearDisplay();
+          display.setTextSize(1);
+          display.setTextColor(WHITE);
+          display.setCursor(0, 0);
+          display.print("Select");
+          display.setCursor(0, 8);
+          display.print("heal");
+          display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
+          display.display();
+        }
+      }
+  
+      byte buttonState4 = digitalRead(BUTTON_FOUR);
+      if (buttonState4 != lastButtonState4) {
+        lastTimeButtonStateChanged = millis();
+        lastButtonState4 = buttonState4;
+        if (buttonState4 == LOW) {
+          healTarget = players[currentIndex].id;
+        }
+      }
+    }
+  }
+
+    if (shield > 0) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("Select");
+    display.setCursor(0, 8);
+    display.print("shield");
+    display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
+    display.display();
+  
+    while (shieldTarget == 0) {
+      byte buttonState1 = digitalRead(BUTTON_ONE);
+      if (buttonState1 != lastButtonState1) {
+        lastTimeButtonStateChanged = millis();
+        lastButtonState1 = buttonState1;
+        if (buttonState1 == LOW) {
+          currentIndex++;
+    
+          if (currentIndex >= numPlayers) {
+            currentIndex = 0;
+          }
+          display.clearDisplay();
+          display.setTextSize(1);
+          display.setTextColor(WHITE);
+          display.setCursor(0, 0);
+          display.print("Select");
+          display.setCursor(0, 8);
+          display.print("shield");
+          display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
+          display.display();
+        }
+      }
+  
+      byte buttonState4 = digitalRead(BUTTON_FOUR);
+      if (buttonState4 != lastButtonState4) {
+        lastTimeButtonStateChanged = millis();
+        lastButtonState4 = buttonState4;
+        if (buttonState4 == LOW) {
+          shieldTarget = players[currentIndex].id;
+        }
+      }
+    }
+  }
 
   pos = prevPos - (damage - shield) + healing;
   tens = pos / 10;
   ones = pos % 10;
 
+  randomNumber = random(1, 21); 
   modifiedPlayerAggro = (prevPlayerAggro + aggro) * (100/100);
   playerAggro = modifiedPlayerAggro;
+  turnAggro = playerAggro + randomNumber;
 
   display.clearDisplay();
-  display.setCursor(30, 0);
-  display.print("Action Report");
-  
-  display.setCursor(0, 17);
-  display.print("Aggro: ");
-  display.println(aggro);
-
-  display.setCursor(65, 17);
-  display.print("x : ");
-  display.println(aggroMultiplier);
-
-  display.setCursor(0, 27);
-  display.print("Damage: ");
-  display.println(damage);
-
-  display.setCursor(65, 27);
-  display.print("Healing: ");
-  display.println(healing);
-
-  display.setCursor(0, 37);
-  display.print("Poison: ");
-  display.println(poison);
-
-  display.setCursor(65, 37);
-  display.print("Bleed: ");
-  display.println(bleed);
-
-  display.setCursor(0, 47);
-  display.print("Fire: ");
-  display.println(fire);
-
-  display.setCursor(65, 47);
-  display.print("Frost: ");
-  display.println(frost);
-
-  display.setCursor(35, 57);
-  display.print("Shield: ");
-  display.println(shield);
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.print("Action");
+  display.setCursor(52, 0);
+  display.print("#");
+  display.setCursor(62, 0);
+  display.print("T");
+  display.setCursor(80, 0);
+  display.print("Status");
+  display.setCursor(5, 12);
+  display.print("aggro");
+  display.setCursor(52, 12);
+  display.print(aggro);
+  display.setCursor(5, 21);
+  display.print("damage");
+  display.setCursor(52, 21);
+  display.print(damage);
+  display.setCursor(62, 21);
+  display.print(damageTarget);
+  display.setCursor(5, 30);
+  display.print("healing");
+  display.setCursor(52, 30);
+  display.print(healing);
+  display.setCursor(62, 30);
+  display.print(healTarget);
+  display.setCursor(5, 39);
+  display.print("shield");
+  display.setCursor(52, 39);
+  display.print(shield);
+  display.setCursor(62, 39);
+  display.print(shieldTarget);
+  display.drawLine(0, 10, 128, 10, WHITE);
+  display.drawLine(0, 48, 128, 48, WHITE);
+  display.drawLine(50, 10, 50, 48, WHITE);
+  display.drawLine(60, 10, 60, 48, WHITE);
+  display.drawLine(70, 10, 70, 48, WHITE);
+  display.setCursor(20, 54);
+  display.print("Turn Aggro: ");
+  display.println(turnAggro);
+  if (poison > 0){
+    display.setCursor(88, 12);
+    display.drawBitmap(72, 12, poisonImage, 16, 16, WHITE);
+    display.println(poison);
+    }
+  if (bleed > 0){
+    display.setCursor(118, 12);
+    display.drawBitmap(98, 12, bleedImage, 16, 16, WHITE);
+    display.println(bleed);
+    }
+  if (fire > 0){
+    display.setCursor(88, 30);
+    display.drawBitmap(72, 30, flameImage, 16, 16, WHITE);
+    display.println(fire);
+    }
+  if (frost > 0){
+    display.setCursor(118, 30);
+    display.drawBitmap(98, 30, frostImage, 16, 16, WHITE);
+    display.println(frost);
+    }
 
   display.display();
 
@@ -342,7 +541,6 @@ void updateValuesAndDisplay() {
 
 void sendVariables() {
   playerHealth = pos;
-  int randomNumber = random(1, 21); 
   String variables = String(playerClass) + "," + 
                      String(playerHealth) + "," + 
                      String(playerAggro) + "," + 
