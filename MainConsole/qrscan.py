@@ -41,11 +41,45 @@ frost = 0
 shield = 0
 health = 20
 
+p1Step = 1
+p1Damage = 0
+p1Healing = 0
+p1Shield = 0
+p1Poison = 0
+p1Bleed = 0
+p1Fire = 0
+p1Frost = 0
+
+p2Step = 1
+p2Damage = 0
+p2Healing = 0
+p2Shield = 0
+p2Poison = 0
+p2Bleed = 0
+p2Fire = 0
+p2Frost = 0
+
+p3Step = 1
+p3Damage = 0
+p3Healing = 0
+p3Shield = 0
+p3Poison = 0
+p3Bleed = 0
+p3Fire = 0
+p3Frost = 0
+
+player1_secondary = [p1Step, p1Damage, p1Healing, p1Shield, p1Poison, p1Bleed, p1Fire, p1Frost]
+player2_secondary = [p2Step, p2Damage, p2Healing, p2Shield, p2Poison, p2Bleed, p2Fire, p2Frost]
+player3_secondary = [p3Step, p3Damage, p3Healing, p3Shield, p3Poison, p3Bleed, p3Fire, p3Frost]
+
 player1_ready = [False]
 player2_ready = [False]
 
 player1_aggro = [0]
 player2_aggro = [0]
+
+# Create a list of all secondary lists
+all_player_secondaries = [player1_secondary, player2_secondary, player3_secondary]
 
 def handle_player(player, player_aggro, player_ready):
     try:
@@ -55,16 +89,28 @@ def handle_player(player, player_aggro, player_ready):
                 line = data.decode('utf-8', 'ignore').strip()  # ignore invalid characters
 
                 variables = line.split(',')
-                print(variables)
-                # Convert each string in the list to the correct type
-                variables[0] = str(variables[0])
-                variables[1] = int(variables[1])
-                player_aggro[0] = int(variables[4])
+                variables = [int(variable) for variable in variables]
+                player_aggro[0] = variables[11]
                 player_ready[0] = True
+                
+                # Update the appropriate secondary list based on the values of variables[2], variables[4], and variables[6]
+                all_player_secondaries[variables[2] - 1][1] += variables[1]
+                all_player_secondaries[variables[2] - 1][4] += variables[7]
+                all_player_secondaries[variables[2] - 1][5] += variables[8]
+                all_player_secondaries[variables[2] - 1][6] += variables[9]
+                all_player_secondaries[variables[2] - 1][7] += variables[10]
+                
+                all_player_secondaries[variables[4] - 1][2] += variables[3]
+                
+                all_player_secondaries[variables[6] - 1][3] += variables[5]
+                
+                print(all_player_secondaries)
+                
             else:
                 time.sleep(0.01)  # To prevent CPU overuse
     except Exception as e:
         print(f"Error in handle_player: {str(e)}")
+
 
 thread1 = Thread(target=handle_player, args=(player1, player1_aggro, player1_ready))
 thread2 = Thread(target=handle_player, args=(player2, player2_aggro, player2_ready))

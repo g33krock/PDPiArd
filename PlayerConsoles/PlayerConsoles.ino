@@ -39,23 +39,26 @@ int prevPos = pos;
 int tens;
 int ones;
 
-int numbers[11] = {0};
+int numbers[14] = {0};
 
-bool thisPlayer = false;
-int aggro = 0;
-float aggroMultiplier = 1;
-int damage = 0;
-int healing = 0;
-int poison = 0;
-int bleed = 0;
-int fire = 0;
-int frost = 0;
-int shield = 0;
+bool thisPlayer;
+int aggro;
+float aggroMultiplier;
+int damage;
+int healing;
+int poison;
+int bleed;
+int fire;
+int frost;
+int shield;
+int damageTarget;
+int healingTarget;
+int shieldTarget;
 
 int prevPlayerAggro = 0;
 int modifiedPlayerAggro = 1;
 
-String playerClass = "rogue";
+String playerClass = "warrior";
 int playerHealth = 20;
 int playerAggro = 0;
 
@@ -143,23 +146,27 @@ void loop() {
   static int valueIndex = 0;
 
   if (Serial.available() > 0) {
-    String incomingData = Serial.readString();
+        String incomingData = Serial.readString();
 
-    int i = 0;
-    for (int index = 0; index < incomingData.length(); index++) {
-      char c = incomingData[index];
-      if (c >= '0' && c <= '9') {
-        numbers[i] = c - '0';
-        i++;
+        int i = 0;
+        String numberString = "";
+        for (int index = 0; index <= incomingData.length(); index++) {
+            char c = incomingData[index];
+            if (c >= '0' && c <= '9') {
+                numberString += c;  // Append the digit to the current number string
+            }
+            else if (c == ',' || index == incomingData.length() - 1) {  // When we reach the end of a number
+                numbers[i] = numberString.toInt();  // Convert the collected number string to integer
+                i++;
+                numberString = "";  // Reset the number string for the next number
+            }
         }
-      }
 
-      if (numbers[0] == 9) {
-        updateValuesAndDisplay();
-        valueIndex = 0;
-        sendVariables();
+        if (numbers[1] == 1 && numbers[0] == 0) {
+            updateValuesAndDisplay();
+            valueIndex = 0;
+        }
     }
-  }
 
     
   
@@ -306,19 +313,19 @@ void resetValues() {
 }
 
 void updateValuesAndDisplay() {
-  bool thisPlayer = numbers[0];
-  int aggro = numbers[1];
-  float aggroMultiplier = numbers[2] * 0.1;  // Assuming you want to divide by 10
-  int damage = numbers[3];
-  int healing = numbers[4];
-  int poison = numbers[5];
-  int bleed = numbers[6];
-  int fire = numbers[7];
-  int frost = numbers[8];
-  int shield = numbers[9];
-  int damageTarget = 0;
-  int healTarget = 0;
-  int shieldTarget = 0;
+  thisPlayer = numbers[1];
+  aggro = numbers[2];
+  aggroMultiplier = numbers[3] * 0.1;  // Assuming you want to divide by 10
+  damage = numbers[4];
+  healing = numbers[5];
+  poison = numbers[6];
+  bleed = numbers[7];
+  fire = numbers[8];
+  frost = numbers[9];
+  shield = numbers[10];
+  damageTarget = 0;
+  healingTarget = 0;
+  shieldTarget = 0;
 
   if (damage > 0) {
     display.clearDisplay();
@@ -372,7 +379,7 @@ void updateValuesAndDisplay() {
     display.drawBitmap(0, 0, players[currentIndex].image, 128, 64, WHITE);
     display.display();
   
-    while (healTarget == 0) {
+    while (healingTarget == 0) {
       byte buttonState1 = digitalRead(BUTTON_ONE);
       if (buttonState1 != lastButtonState1) {
         lastTimeButtonStateChanged = millis();
@@ -400,7 +407,7 @@ void updateValuesAndDisplay() {
         lastTimeButtonStateChanged = millis();
         lastButtonState4 = buttonState4;
         if (buttonState4 == LOW) {
-          healTarget = players[currentIndex].id;
+          healingTarget = players[currentIndex].id;
         }
       }
     }
@@ -463,37 +470,37 @@ void updateValuesAndDisplay() {
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
   display.print("Action");
-  display.setCursor(52, 0);
+  display.setCursor(47, 0);
   display.print("#");
   display.setCursor(62, 0);
   display.print("T");
   display.setCursor(80, 0);
   display.print("Status");
-  display.setCursor(5, 12);
+  display.setCursor(0, 12);
   display.print("aggro");
-  display.setCursor(52, 12);
+  display.setCursor(47, 12);
   display.print(aggro);
-  display.setCursor(5, 21);
+  display.setCursor(0, 21);
   display.print("damage");
-  display.setCursor(52, 21);
+  display.setCursor(47, 21);
   display.print(damage);
   display.setCursor(62, 21);
   display.print(damageTarget);
-  display.setCursor(5, 30);
+  display.setCursor(0, 30);
   display.print("healing");
-  display.setCursor(52, 30);
+  display.setCursor(47, 30);
   display.print(healing);
   display.setCursor(62, 30);
-  display.print(healTarget);
-  display.setCursor(5, 39);
+  display.print(healingTarget);
+  display.setCursor(0, 39);
   display.print("shield");
-  display.setCursor(52, 39);
+  display.setCursor(47, 39);
   display.print(shield);
   display.setCursor(62, 39);
   display.print(shieldTarget);
   display.drawLine(0, 10, 128, 10, WHITE);
   display.drawLine(0, 48, 128, 48, WHITE);
-  display.drawLine(50, 10, 50, 48, WHITE);
+  display.drawLine(45, 10, 45, 48, WHITE);
   display.drawLine(60, 10, 60, 48, WHITE);
   display.drawLine(70, 10, 70, 48, WHITE);
   display.setCursor(20, 54);
@@ -535,17 +542,38 @@ void updateValuesAndDisplay() {
   delay(500);
   
   prevPos = pos;
-
+  sendVariables();
   resetValues();
 }
 
+void resetCardValues(){
+  damage = 0;
+  healing = 0;
+  poison = 0;
+  bleed = 0;
+  fire = 0;
+  frost = 0;
+  shield = 0;
+  damageTarget = 0;
+  healingTarget = 0;
+  shieldTarget = 0;
+  }
+
 void sendVariables() {
   playerHealth = pos;
-  String variables = String(playerClass) + "," + 
-                     String(playerHealth) + "," + 
-                     String(playerAggro) + "," + 
-                     String(randomNumber) + "," + 
+  String variables = String(1) + "," + 
+                     String(damage) + "," + 
+                     String(damageTarget) + "," + 
+                     String(healing) + "," + 
+                     String(healingTarget) + "," + 
+                     String(shield) + "," + 
+                     String(shieldTarget) + "," + 
+                     String(poison) + "," + 
+                     String(bleed) + "," + 
+                     String(fire) + "," + 
+                     String(frost) + "," + 
                      String(playerAggro + randomNumber);
+                     
   Serial.println(variables);
   prevPlayerAggro = playerAggro;
 }
