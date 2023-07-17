@@ -68,9 +68,10 @@ p3Bleed = 0
 p3Fire = 0
 p3Frost = 0
 
-player1_secondary = [p1Step, p1Damage, p1Healing, p1Shield, p1Poison, p1Bleed, p1Fire, p1Frost]
-player2_secondary = [p2Step, p2Damage, p2Healing, p2Shield, p2Poison, p2Bleed, p2Fire, p2Frost]
-player3_secondary = [p3Step, p3Damage, p3Healing, p3Shield, p3Poison, p3Bleed, p3Fire, p3Frost]
+player1_secondary = [p1Step, 1, 0, 0, p1Damage, p1Healing, p1Poison, p1Bleed, p1Fire, p1Frost, p1Shield, 0, 0, 0, 0, 0, 0, 0, 0]
+player2_secondary = [p2Step, 2, 0, 0, p2Damage, p2Healing, p2Poison, p2Bleed, p2Fire, p2Frost, p2Shield, 0, 0, 0, 0, 0, 0, 0, 0]
+player3_secondary = [p3Step, 3, 0, 0, p3Damage, p3Healing, p3Poison, p3Bleed, p3Fire, p3Frost, p3Shield, 0, 0, 0, 0, 0, 0, 0, 0]
+
 
 player1_ready = [False]
 player2_ready = [False]
@@ -90,19 +91,12 @@ def handle_player(player, player_aggro, player_ready):
 
                 variables = line.split(',')
                 variables = [int(variable) for variable in variables]
-                player_aggro[0] = variables[11]
+                player_aggro[0] = variables[2]
                 player_ready[0] = True
                 
-                # Update the appropriate secondary list based on the values of variables[2], variables[4], and variables[6]
-                all_player_secondaries[variables[2] - 1][1] += variables[1]
-                all_player_secondaries[variables[2] - 1][4] += variables[7]
-                all_player_secondaries[variables[2] - 1][5] += variables[8]
-                all_player_secondaries[variables[2] - 1][6] += variables[9]
-                all_player_secondaries[variables[2] - 1][7] += variables[10]
-                
-                all_player_secondaries[variables[4] - 1][2] += variables[3]
-                
-                all_player_secondaries[variables[6] - 1][3] += variables[5]
+                # Update the appropriate secondary list based on the values of variables
+                for i in range(len(variables)):
+                    all_player_secondaries[variables[1] - 1][i] = variables[i]
                 
                 print(all_player_secondaries)
                 
@@ -136,7 +130,7 @@ try:
             if player1_aggro[0] > player2_aggro[0]:
                 target = 1
             elif player1_aggro[0] < player2_aggro[0]:
-                target = 9
+                target = 2
             else:
                 target = 1
             print("P1 aggro:" + str(player1_aggro[0]))

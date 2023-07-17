@@ -39,7 +39,7 @@ int prevPos = pos;
 int tens;
 int ones;
 
-int numbers[14] = {0};
+int numbers[19] = {0};
 
 bool thisPlayer;
 int aggro;
@@ -58,7 +58,7 @@ int shieldTarget;
 int prevPlayerAggro = 0;
 int modifiedPlayerAggro = 1;
 
-String playerClass = "warrior";
+String playerClass = "rogue";
 int playerHealth = 20;
 int playerAggro = 0;
 
@@ -162,7 +162,7 @@ void loop() {
             }
         }
 
-        if (numbers[1] == 1 && numbers[0] == 0) {
+        if (numbers[1] == 2 && numbers[0] == 0) {
             updateValuesAndDisplay();
             valueIndex = 0;
         }
