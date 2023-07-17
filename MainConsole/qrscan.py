@@ -6,7 +6,6 @@ import random
 from tkinter import Tk
 from threading import Thread
 
-# Get screen size
 root = Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
@@ -29,7 +28,7 @@ def get_random_monster_action(target):
         {'heal':[{'target':2}, {'amount':2}]}
     ]
     
-    return random.choice(monster)  # Return a random action dictionary
+    return random.choice(monster)
 
 target = 0
 damage = 0
@@ -79,7 +78,6 @@ player2_ready = [False]
 player1_aggro = [0]
 player2_aggro = [0]
 
-# Create a list of all secondary lists
 all_player_secondaries = [player1_secondary, player2_secondary, player3_secondary]
 
 def handle_player(player, player_aggro, player_ready):
@@ -87,21 +85,21 @@ def handle_player(player, player_aggro, player_ready):
         while True:
             if player.is_open and player.in_waiting > 0:
                 data = player.readline()
-                line = data.decode('utf-8', 'ignore').strip()  # ignore invalid characters
+                line = data.decode('utf-8', 'ignore').strip()
 
                 variables = line.split(',')
                 variables = [int(variable) for variable in variables]
                 player_aggro[0] = variables[2]
                 player_ready[0] = True
                 
-                # Update the appropriate secondary list based on the values of variables
+                
                 for i in range(len(variables)):
                     all_player_secondaries[variables[1] - 1][i] = variables[i]
                 
                 print(all_player_secondaries)
                 
             else:
-                time.sleep(0.01)  # To prevent CPU overuse
+                time.sleep(0.01)
     except Exception as e:
         print(f"Error in handle_player: {str(e)}")
 
@@ -160,7 +158,6 @@ try:
             cv2.waitKey(10000)
             cv2.destroyAllWindows()
 
-            # Reset readiness and waiting state
             player1_ready[0] = False
             player2_ready[0] = False
             player1.reset_input_buffer()
@@ -173,11 +170,9 @@ except Exception as e:
     print(f"Error: {str(e)}")
 
 finally:
-    # Wait for all threads to finish
     thread1.join()
     thread2.join()
 
-    # Now we can safely close our resources
     player1.close()
     player2.close()
     ser.close()
