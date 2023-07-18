@@ -54,6 +54,11 @@ int shield;
 int damageTarget;
 int healingTarget;
 int shieldTarget;
+int damageMod;
+int healingMod;
+int shieldMod;
+int modTarget;
+int special;
 
 int prevPlayerAggro = 0;
 int modifiedPlayerAggro = 1;
@@ -85,6 +90,8 @@ int randomNumber;
 int numPlayers = sizeof(players) / sizeof(players[0]);
 
 int currentIndex = 0;
+
+int playerNum = 2;
 
 
 void setup() {
@@ -162,7 +169,7 @@ void loop() {
             }
         }
 
-        if (numbers[1] == 2 && numbers[0] == 0) {
+        if (numbers[1] == playerNum && numbers[0] == 0) {
             updateValuesAndDisplay();
             valueIndex = 0;
         }
@@ -323,9 +330,14 @@ void updateValuesAndDisplay() {
   fire = numbers[8];
   frost = numbers[9];
   shield = numbers[10];
-  damageTarget = 0;
-  healingTarget = 0;
-  shieldTarget = 0;
+  damageTarget = numbers[11];
+  healingTarget = numbers[12];
+  shieldTarget = numbers[13];
+  damageMod = numbers[14];
+  healingMod = numbers[15];
+  shieldMod = numbers[16];
+  modTarget = numbers[17];
+  special = numbers[18];
 
   if (damage > 0) {
     display.clearDisplay();
@@ -562,17 +574,24 @@ void resetCardValues(){
 void sendVariables() {
   playerHealth = pos;
   String variables = String(1) + "," + 
+                     String(playerNum) + "," +
+                     String(playerAggro) + "," +
+                     String(playerAggro + randomNumber) + "," +  
                      String(damage) + "," + 
-                     String(damageTarget) + "," + 
                      String(healing) + "," + 
-                     String(healingTarget) + "," + 
-                     String(shield) + "," + 
-                     String(shieldTarget) + "," + 
                      String(poison) + "," + 
                      String(bleed) + "," + 
                      String(fire) + "," + 
-                     String(frost) + "," + 
-                     String(playerAggro + randomNumber);
+                     String(frost) + "," +
+                     String(shield) + "," +  
+                     String(damageTarget) + "," + 
+                     String(healingTarget) + "," + 
+                     String(shieldTarget) + "," + 
+                     String(damageMod) + "," + 
+                     String(healingMod) + "," + 
+                     String(shieldMod) + "," +
+                     String(modTarget) + "," + 
+                     String(special);
                      
   Serial.println(variables);
   prevPlayerAggro = playerAggro;

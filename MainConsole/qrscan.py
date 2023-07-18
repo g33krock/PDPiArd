@@ -12,7 +12,7 @@ screen_height = root.winfo_screenheight()
 root.destroy()
 
 ser = serial.Serial('/dev/ttyS0', 9600, timeout=1)
-player1 = serial.Serial('/dev/ttyUSB0', 9600)
+player1 = serial.Serial('/dev/ttyUSB1', 9600)
 player2 = serial.Serial('/dev/ttyACM0', 9600)
 
 time.sleep(2)
@@ -41,35 +41,65 @@ shield = 0
 health = 20
 
 p1Step = 1
+p1Aggro = 0
+p1AdjustedAggro = 0
 p1Damage = 0
 p1Healing = 0
-p1Shield = 0
 p1Poison = 0
 p1Bleed = 0
 p1Fire = 0
 p1Frost = 0
+p1Shield = 0
+p1DamageTarget = 0
+p1HealingTarget = 0
+p1ShieldTarget = 0
+p1DamageMod = 0
+p1HealingMod = 0
+p1ShieldMod = 0
+p1ModTarget = 0
+p1Special = 0
 
 p2Step = 1
+p2Aggro = 0
+p2AdjustedAggro = 0
 p2Damage = 0
 p2Healing = 0
-p2Shield = 0
 p2Poison = 0
 p2Bleed = 0
 p2Fire = 0
 p2Frost = 0
+p2Shield = 0
+p2DamageTarget = 0
+p2HealingTarget = 0
+p2ShieldTarget = 0
+p2DamageMod = 0
+p2HealingMod = 0
+p2ShieldMod = 0
+p2ModTarget = 0
+p2Special = 0
 
 p3Step = 1
+p3Aggro = 0
+p3AdjustedAggro = 0
 p3Damage = 0
 p3Healing = 0
-p3Shield = 0
 p3Poison = 0
 p3Bleed = 0
 p3Fire = 0
 p3Frost = 0
+p3Shield = 0
+p3DamageTarget = 0
+p3HealingTarget = 0
+p3ShieldTarget = 0
+p3DamageMod = 0
+p3HealingMod = 0
+p3ShieldMod = 0
+p3ModTarget = 0
+p3Special = 0
 
-player1_secondary = [p1Step, 1, 0, 0, p1Damage, p1Healing, p1Poison, p1Bleed, p1Fire, p1Frost, p1Shield, 0, 0, 0, 0, 0, 0, 0, 0]
-player2_secondary = [p2Step, 2, 0, 0, p2Damage, p2Healing, p2Poison, p2Bleed, p2Fire, p2Frost, p2Shield, 0, 0, 0, 0, 0, 0, 0, 0]
-player3_secondary = [p3Step, 3, 0, 0, p3Damage, p3Healing, p3Poison, p3Bleed, p3Fire, p3Frost, p3Shield, 0, 0, 0, 0, 0, 0, 0, 0]
+player1_secondary = [p1Step, 1, p1Aggro, p1AdjustedAggro, p1Damage, p1Healing, p1Poison, p1Bleed, p1Fire, p1Frost, p1Shield, p1DamageTarget, p1HealingTarget, p1ShieldTarget, p1DamageMod, p1HealingMod, p1ShieldMod, p1ModTarget, p1Special]
+player2_secondary = [p2Step, 2, p2Aggro, p2AdjustedAggro, p2Damage, p2Healing, p2Poison, p2Bleed, p2Fire, p2Frost, p2Shield, p2DamageTarget, p2HealingTarget, p2ShieldTarget, p2DamageMod, p2HealingMod, p2ShieldMod, p2ModTarget, p2Special]
+player3_secondary = [p3Step, 3, p3Aggro, p3AdjustedAggro, p3Damage, p3Healing, p3Poison, p3Bleed, p3Fire, p3Frost, p3Shield, p3DamageTarget, p3HealingTarget, p3ShieldTarget, p3DamageMod, p3HealingMod, p3ShieldMod, p3ModTarget, p3Special]
 
 
 player1_ready = [False]
@@ -89,7 +119,7 @@ def handle_player(player, player_aggro, player_ready):
 
                 variables = line.split(',')
                 variables = [int(variable) for variable in variables]
-                player_aggro[0] = variables[2]
+                player_aggro[0] = variables[3]
                 player_ready[0] = True
                 
                 
